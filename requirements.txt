@@ -1,1 +1,9 @@
-
+Streamlit
+Pandas
+Numpy
+Sklearn
+Xgboost
+Matplotlib
+Seaborn
+Joblib
+Stream_lottie
