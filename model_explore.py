@@ -67,9 +67,9 @@ tab1, tab2, tab3, tab4 = st.tabs(["\U0001F3E0 Home", "⚙️ Model Explorer", "\
 # --- Home Tab ---
 with tab1:
     # Load all three Lottie animations
-    lottie_center = load_lottiefile("D:\Codes\Animation - 1746327305438.json")
-    lottie_left = load_lottiefile("D:\Codes\Animation - 1746337360103.json")
-    lottie_right = load_lottiefile("D:\Codes\Animation - 1746337731316.json")
+    lottie_center = load_lottiefile("assets\Animation - 1746327305438.json")
+    lottie_left = load_lottiefile("assets\Animation - 1746337360103.json")
+    lottie_right = load_lottiefile("assets\Animation - 1746337731316.json")
 
     st.markdown("""
         <style>
