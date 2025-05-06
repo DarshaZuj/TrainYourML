@@ -6,4 +6,4 @@ Xgboost
 Matplotlib
 Seaborn
 Joblib
-Stream_lottie
+Streamlit_lottie
