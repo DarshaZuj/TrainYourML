@@ -262,7 +262,7 @@ with tab2:
                     st.text(classification_report(y_test, y_pred))
                     st.text("Confusion Matrix")
                     cm = confusion_matrix(y_test, y_pred)
-                    fig, ax = plt.subplots(figsize=(5, 3))
+                    fig, ax = plt.subplots(figsize=(3, 1))
                     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
                     st.pyplot(fig)
                 else:
