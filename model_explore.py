@@ -538,6 +538,8 @@ with tab5:
 
         5. **Download Your Trained Model** 💾: Export your model as a .pkl file and use it for predictions later.
 
+        6. **Get Predictions**: Upload ypur .pkl file and input data to predict.
+
         6. **No Need for Code** 🧑‍💻: Don't worry about writing code – everything's done for you in a simple, interactive interface!
 
         ## 🛠️ Tools and Technologies Used
