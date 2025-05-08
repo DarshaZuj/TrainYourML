@@ -569,7 +569,7 @@ with tab5:
         ## 📬 Get in Touch
         Feel free to reach out or connect with me! I'm always open to feedback, collaboration, or just talking about ML! 😄
 
-        + **GitHub**: Visit my GitHub Repo
+        + **GitHub**: [Visit my GitHub Repo](https://github.com/DarshaZuj/TrainYourML)
 
         + **LinkedIn**: [Darshana Zujam](www.linkedin.com/in/darshana-zujam-66a5aa285)
 
