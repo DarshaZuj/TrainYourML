@@ -178,7 +178,7 @@ with tab1:
     st.markdown("""
             <div style='text-align: center; padding: 20px; font-size: 14px; color: gray;'>
             © 2025 TrainYourML | Built using Streamlit<br>
-            <a href='https://github.com/your-repo' target='_blank'>GitHub</a> |
+            <a href='https://github.com/DarshaZuj/TrainYourML' target='_blank'>GitHub</a> |
             <a href='mailto:darshanazujam@gmail'>Contact</a>
             </div>
         """, unsafe_allow_html=True)
@@ -355,21 +355,25 @@ with tab2:
 		    # Confusion Matrix
                     st.subheader("Confusion Matrix")
 
-                    fig = plt.figure(figsize=(2, 1), dpi=200)
+                    fig = plt.figure(figsize=(4,3), dpi=200)
                     ax = fig.add_subplot(1,1,1)  
                     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
                                 xticklabels=np.unique(y_test), 
                                 yticklabels=np.unique(y_test),
-                                annot_kws={"size": 3},  # Try 3 if you want even smaller text
-                                cbar=False,  # Optional: shrink colorbar
+                                annot_kws={"size": 8},  
+                                cbar=False,  
                                 ax=ax)
 
 		    # Reduce tick label and axis label sizes
                     ax.tick_params(axis='both', labelsize=7)
-                    ax.set_xlabel("Predicted", fontsize=5)
-                    ax.set_ylabel("Actual", fontsize=5)
+                    ax.set_xlabel("Predicted", fontsize=8)
+                    ax.set_ylabel("Actual", fontsize=8)
 
-                    st.pyplot(fig)
+                    col1, col2, col3 = st.columns([1, 3, 1])
+                    with col2:
+                        st.pyplot(fig, use_container_width=True)
+
+
 
                     
                     #additional metrics
@@ -390,6 +394,7 @@ with tab2:
                 st.download_button("Download Trained Pipeline", data=open("trained_pipeline.pkl", "rb").read(), file_name="trained_pipeline.pkl")
         else:
             st.info("Please upload a dataset to get started.")
+            st.info("\n🔍 Note: Currently, TrainYourML supports only supervised machine learning models, which means your dataset must be labeled — the target column (what you want to predict) should already be included in your data. Unsupervised tasks like clustering are not supported at this time.")
 
 #------ Predictor------
 
@@ -441,7 +446,7 @@ with tab4:
     st.title("User Guide")
     st.markdown("""
         ## 🚀 Welcome to TrainYourML! 🚀
-        TrainYourML is your go-to open-source AutoML tool to easily upload datasets, train models, and compare performance — all with just a few clicks! 🖱️ Whether you're working on classification or regression tasks, we've got you covered! Let's dive in and get started. 😎
+        TrainYourML is your go-to open-source AutoML tool to easily upload datasets, train models, compare performance, and get predictions — all with just a few clicks! 🖱️ Whether you're working on classification or regression tasks, we've got you covered! Let's dive in and get started. 😎
 
         ### 📝 Getting Started
         1. **Upload Your Dataset:**
@@ -467,9 +472,7 @@ with tab4:
 
         ###### 🔍 Note: Currently, TrainYourML supports only supervised machine learning models, which means your dataset must be labeled — the target column (what you want to predict) should already be included in your data. Unsupervised tasks like clustering are not supported at this time.
 
-	    
-	
-	### 📊 Understanding the Metrics
+        ### 📊 Understanding the Metrics
         For classification problems:
         - **Accuracy**: Overall correctness of the model
         - **Precision**: Proportion of positive identifications that were correct
@@ -513,7 +516,7 @@ with tab4:
     st.markdown("""
             <div style='text-align: center; padding: 20px; font-size: 14px; color: gray;'>
             © 2025 TrainYourML | Built using Streamlit<br>
-            <a href='https://github.com/your-repo' target='_blank'>GitHub</a> |
+            <a href='https://github.com/DarshaZuj/TrainYourML' target='_blank'>GitHub</a> |
             <a href='mailto:darshanazujam@gmail'>Contact</a> 
             </div>
         """, unsafe_allow_html=True)
@@ -543,8 +546,6 @@ with tab5:
 
         5. **Download Your Trained Model** 💾: Export your model as a .pkl file and use it for predictions later.
 
-        6. **Get Predictions**: Upload ypur .pkl file and input data to predict.
-
         6. **No Need for Code** 🧑‍💻: Don't worry about writing code – everything's done for you in a simple, interactive interface!
 
         ## 🛠️ Tools and Technologies Used
@@ -569,7 +570,7 @@ with tab5:
         + **Python**: The language that makes everything work 🐍
 
         ## 🙏 Acknowledgements
-        A huge thank you to my professor, **Dr. Kushagra Kashyap**, for being an amazing mentor and **Dr. Poonam Deshpande** for her support. 🙌 I also want to express my gratitude to DES Pune University for providing me with the resources and environment to create this app. 🎓
+        A huge thank you to my professors, **Dr. Kushagra Kashyap**, for being an amazing mentor and **Dr. Poonam Deshpande** for her support. 🙌 I also want to express my gratitude to DES Pune University for providing me with the resources and environment to create this app. 🎓
 
         ## 📬 Get in Touch
         Feel free to reach out or connect with me! I'm always open to feedback, collaboration, or just talking about ML! 😄
@@ -578,7 +579,7 @@ with tab5:
 
         + **LinkedIn**: [Darshana Zujam](https://www.linkedin.com/in/darshana-zujam-66a5aa285)
 
-        + **Email**: darshanazujam@gmail.com
+        + **Email**: [darshanazujam@gmail.com](darshanazujam@gmail.com)
 
 
     
@@ -589,7 +590,7 @@ with tab5:
     st.markdown("""
         <div style='text-align: center; padding: 20px; font-size: 14px; color: gray;'>
         © 2025 TrainYourML | Built using Streamlit<br>
-        <a href='https://github.com/your-repo' target='_blank'>GitHub</a> |
+        <a href='https://github.com/DarshaZuj/TrainYourML' target='_blank'>GitHub</a> |
         <a href='mailto:darshanazujam@gmail'>Contact</a> 
         </div>
     """, unsafe_allow_html=True)
