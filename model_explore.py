@@ -464,6 +464,9 @@ with tab4:
             - After training, you can download your trained model as a `.pkl` file to use later! 💾
         7. **Get Predictions:**
             - Upload the .pkl file and input data for predictions.
+
+        ###### 🔍 Note: Currently, TrainYourML supports only supervised machine learning models, which means your dataset must be labeled — the target column (what you want to predict) should already be included in your data. Unsupervised tasks like clustering are not supported at this time.
+
 	    
 	
 	### 📊 Understanding the Metrics
