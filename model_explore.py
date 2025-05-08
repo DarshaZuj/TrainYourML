@@ -571,7 +571,7 @@ with tab5:
 
         + **GitHub**: [Visit my GitHub Repo](https://github.com/DarshaZuj/TrainYourML)
 
-        + **LinkedIn**: [Darshana Zujam](www.linkedin.com/in/darshana-zujam-66a5aa285)
+        + **LinkedIn**: [Darshana Zujam](https://www.linkedin.com/in/darshana-zujam-66a5aa285)
 
         + **Email**: [darshanazujam@gmail.com](darshanazujam@gmail.com)
 
