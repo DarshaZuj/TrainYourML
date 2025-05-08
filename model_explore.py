@@ -13,7 +13,7 @@ from sklearn.svm import SVC, SVR
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import (
     classification_report, confusion_matrix,
-    mean_squared_error, r2_score
+    mean_squared_error, r2_score, matthews_corrcoef
 )
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
@@ -24,8 +24,59 @@ import xgboost as xgb
 import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
 
-# Load lottie animation function
+def build_pipeline(model, X):
+    categorical_cols = X.select_dtypes(include=["object"]).columns.tolist()
+    numerical_cols = X.select_dtypes(exclude=["object"]).columns.tolist()
+
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("num", StandardScaler(), numerical_cols),
+            ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_cols)
+        ]
+    )
+
+    return Pipeline([
+        ("preprocessor", preprocessor),
+        ("model", model)
+    ])
+
+def train_and_evaluate_model(model, X_train, X_test, y_train, y_test, problem_type):
+    pipeline = build_pipeline(model, X_train)
+    pipeline.fit(X_train, y_train)
+    y_pred = pipeline.predict(X_test)
+
+    metrics = {}
+    if problem_type == "classification":
+        metrics["Accuracy"] = pipeline.score(X_test, y_test)
+        report = classification_report(y_test, y_pred, output_dict=True)
+        metrics["F1 Score"] = f"{report['weighted avg']['f1-score']:.4f}"
+        
+        # Calculate specificity, sensitivity (recall), and MCC
+        cm = confusion_matrix(y_test, y_pred)
+        tn, fp, fn, tp = cm.ravel()
+        
+        # Sensitivity (Recall)
+        sensitivity = tp / (tp + fn)
+        metrics["Sensitivity (Recall)"] = f"{sensitivity:.4f}"
+        
+        # Specificity
+        specificity = tn / (tn + fp)
+        metrics["Specificity"] = f"{specificity:.4f}"
+        
+        # Matthews Correlation Coefficient
+        mcc = matthews_corrcoef(y_test, y_pred)
+        metrics["MCC"] = f"{mcc:.4f}"
+    else:
+        metrics["R² Score"] = r2_score(y_test, y_pred)
+        metrics["MSE"] = mean_squared_error(y_test, y_pred)
+
+    return pipeline, y_pred, metrics
+
+
+#lottie animation function
 def load_lottiefile(filepath: str):
     with open(filepath, "r") as f:
         return json.load(f)
@@ -33,7 +84,7 @@ def load_lottiefile(filepath: str):
 # Set Streamlit page config
 st.set_page_config(page_title="TrainYourML", layout="wide")
 
-# Inject CSS
+# CSS
 st.markdown("""
     <style>
     header, .css-18e3th9 {
@@ -60,16 +111,14 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-
-
-tab1, tab2, tab3, tab4 = st.tabs(["\U0001F3E0 Home", "⚙️ Model Explorer", "\U0001F4D8 User Guide", "ℹ️ About"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["\U0001F3E0 Home", "⚙️ Model Explorer", "🤖 Predictor", "\U0001F4D8 User Guide", "ℹ️ About"])
 
 # --- Home Tab ---
 with tab1:
     # Load all three Lottie animations
-    lottie_center = load_lottiefile("assets/Animation - 1746327305438.json")
-    lottie_left = load_lottiefile("assets/Animation - 1746337360103.json")
-    lottie_right = load_lottiefile("assets/Animation - 1746337731316.json")
+    lottie_center = load_lottiefile("D:\Codes\Animation - 1746327305438.json")
+    lottie_left = load_lottiefile("D:\Codes\Animation - 1746337360103.json")
+    lottie_right = load_lottiefile("D:\Codes\Animation - 1746337731316.json")
 
     st.markdown("""
         <style>
@@ -133,8 +182,6 @@ with tab1:
             <a href='mailto:darshanazujam@gmail'>Contact</a>
             </div>
         """, unsafe_allow_html=True)
-
-
 
 # --- App Tab ---
 with tab2:
@@ -227,10 +274,21 @@ with tab2:
 
                     if problem_type == "classification":
                         score = pipeline.score(X_test, y_test)
+                        cm = confusion_matrix(y_test, y_pred)
+                        tn, fp, fn, tp = cm.ravel()
+                        
+                        # Calculate additional metrics
+                        sensitivity = tp / (tp + fn)
+                        specificity = tn / (tn + fp)
+                        mcc = matthews_corrcoef(y_test, y_pred)
+                        
                         results.append({
                             "Model": name,
                             "Accuracy": score,
-                            "F1 Score": f"{classification_report(y_test, y_pred, output_dict=True)['weighted avg']['f1-score']:.4f}"
+                            "F1 Score": f"{classification_report(y_test, y_pred, output_dict=True)['weighted avg']['f1-score']:.4f}",
+                            "Sensitivity": f"{sensitivity:.4f}",
+                            "Specificity": f"{specificity:.4f}",
+                            "MCC": f"{mcc:.4f}"
                         })
                     else:
                         results.append({
@@ -242,7 +300,7 @@ with tab2:
                 st.subheader("Comparison Results")
                 st.dataframe(pd.DataFrame(results))
 
-            # Train Model Option
+            #train Model Option
             model_type = st.selectbox("Train a Model", list(model_map.keys()))
 
             if st.button("Train Model"):
@@ -258,13 +316,71 @@ with tab2:
                 st.subheader("Evaluation Results")
 
                 if problem_type == "classification":
-                    st.text("Classification Report")
-                    st.text(classification_report(y_test, y_pred))
-                    st.text("Confusion Matrix")
+                    # Get classification report as dictionary
+                    report = classification_report(y_test, y_pred, output_dict=True)
+                    
+                    # Calculate additional metrics
                     cm = confusion_matrix(y_test, y_pred)
-                    fig, ax = plt.subplots(figsize=(1, 1))
-                    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
+                    tn, fp, fn, tp = cm.ravel()
+                    sensitivity = tp / (tp + fn)
+                    specificity = tn / (tn + fp)
+                    mcc = matthews_corrcoef(y_test, y_pred)
+                    
+
+                    
+                    #onvert to DataFrame
+                    report_df = pd.DataFrame(report).transpose()
+                    
+                    # Style the DataFrame
+                    styled_report = report_df.style\
+                        .format({
+                            'precision': '{:.2f}', 
+                            'recall': '{:.2f}', 
+                            'f1-score': '{:.2f}', 
+                            'support': '{:.0f}',
+                            'specificity': '{:.2f}',
+                            'mcc': '{:.2f}'
+                        })\
+                        .set_properties(**{'text-align': 'center'})\
+                        .set_table_styles([{
+                            'selector': 'th',
+                            'props': [('background-color', '#40466e'), 
+                                     ('color', 'white'),
+                                     ('font-weight', 'bold')]
+                        }])
+                    
+                    st.subheader("Classification Report")
+                    st.dataframe(styled_report)
+                    
+		    # Confusion Matrix
+                    st.subheader("Confusion Matrix")
+
+                    fig = plt.figure(figsize=(2, 1), dpi=200)
+                    ax = fig.add_subplot(1,1,1)  
+                    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
+                                xticklabels=np.unique(y_test), 
+                                yticklabels=np.unique(y_test),
+                                annot_kws={"size": 3},  # Try 3 if you want even smaller text
+                                cbar=False,  # Optional: shrink colorbar
+                                ax=ax)
+
+		    # Reduce tick label and axis label sizes
+                    ax.tick_params(axis='both', labelsize=7)
+                    ax.set_xlabel("Predicted", fontsize=5)
+                    ax.set_ylabel("Actual", fontsize=5)
+
                     st.pyplot(fig)
+
+                    
+                    #additional metrics
+                    st.subheader("Additional Metrics")
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Sensitivity (Recall)", f"{sensitivity:.4f}")
+                    with col2:
+                        st.metric("Specificity", f"{specificity:.4f}")
+                    with col3:
+                        st.metric("MCC", f"{mcc:.4f}")
                 else:
                     st.text(f"R² Score: {r2_score(y_test, y_pred):.4f}")
                     st.text(f"Mean Squared Error: {mean_squared_error(y_test, y_pred):.4f}")
@@ -275,34 +391,92 @@ with tab2:
         else:
             st.info("Please upload a dataset to get started.")
 
-# --- User Guide Tab ---
+#------ Predictor------
+
 with tab3:
+    st.title("🔍 Predict with Trained Model")
+    st.markdown("""
+    ### Instructions:
+    1. **Upload your trained model file** (`.pkl`).
+    2. **Upload a CSV file** containing the input data for prediction.
+       - Ensure the CSV has the **same features/columns** as the data used during training.
+       - Do **not** include the target column (labels) in the prediction data.
+    """)
+
+
+    # Upload trained model
+    model_file = st.file_uploader("Upload your trained model (.pkl)", type=["pkl"])
+
+    # Upload input data
+    input_file = st.file_uploader("Upload CSV with data to predict", type=["csv"])
+
+    if model_file and input_file:
+        model = joblib.load(model_file)
+        input_df = pd.read_csv(input_file)
+
+        st.subheader("Input Data")
+        st.dataframe(input_df)
+
+        # Predict
+        if st.button("Predict"):
+            try:
+                predictions = model.predict(input_df)
+                input_df["Prediction"] = predictions
+                st.subheader("Predictions")
+                st.dataframe(input_df)
+
+                # Download
+                csv = input_df.to_csv(index=False).encode('utf-8')
+                st.download_button("Download Predictions", csv, "predictions.csv", "text/csv")
+
+            except Exception as e:
+                st.error(f"Prediction failed: {e}")
+
+
+
+
+
+# --- User Guide Tab ---
+with tab4:
     st.title("User Guide")
     st.markdown("""
         ## 🚀 Welcome to TrainYourML! 🚀
-        TrainYourML is your go-to open-source AutoML tool to easily upload datasets, train models, and compare performance — all with just a few clicks! 🖱️ Whether you're working on classification or regression tasks, we’ve got you covered! Let's dive in and get started. 😎
+        TrainYourML is your go-to open-source AutoML tool to easily upload datasets, train models, and compare performance — all with just a few clicks! 🖱️ Whether you're working on classification or regression tasks, we've got you covered! Let's dive in and get started. 😎
 
         ### 📝 Getting Started
         1. **Upload Your Dataset:**
             - Click on the "Upload CSV or TSV file" button to upload your dataset. 📂
-            - We support CSV and TSV formats, so you’re good to go if your data is in those formats.
+            - We support CSV and TSV formats, so you're good to go if your data is in those formats.
         2. **Select the Target Column:**
             - Choose the column you want to predict! 🏆
             - Pick your target column from the list of columns in your dataset.
         3. **Choose Your Features:**
             - You can either select the features manually or enable Automatic Feature Selection! 🔍
-            - We’ll help you pick the top features using statistical methods, so you can focus on the important ones!
+            - We'll help you pick the top features using statistical methods, so you can focus on the important ones!
         4. **Split Your Data:**
-            - Choose the size of your test set, and we’ll handle the rest by splitting your data into training and testing sets. 📊
+            - Choose the size of your test set, and we'll handle the rest by splitting your data into training and testing sets. 📊
         5. **Model Comparison:**
             - Want to compare multiple models? 🤖
             - Select from a variety of models (like Random Forest, Logistic Regression, XGBoost, and more), and let the app work its magic! 🚀
-            - We’ll display the performance comparison of each model, so you can easily choose the best one for your problem.
+            - We'll display the performance comparison of each model, so you can easily choose the best one for your problem.
         6. **Train a Model:**
-            - Pick a single model to train. Once trained, we’ll evaluate it using the test set and show you key metrics like accuracy, precision, recall, R², and Mean Squared Error. 📈
+            - Pick a single model to train. Once trained, we'll evaluate it using the test set and show you key metrics like accuracy, precision, recall, specificity, MCC, R², and Mean Squared Error. 📈
             - After training, you can download your trained model as a `.pkl` file to use later! 💾
-
+        7. **Get Predictions:**
+            - Upload the .pkl file and input data for predictions.
+        ### 📊 Understanding the Metrics
+        For classification problems:
+        - **Accuracy**: Overall correctness of the model
+        - **Precision**: Proportion of positive identifications that were correct
+        - **Recall (Sensitivity)**: Proportion of actual positives correctly identified
+        - **Specificity**: Proportion of actual negatives correctly identified
+        - **F1 Score**: Harmonic mean of precision and recall
+        - **MCC (Matthews Correlation Coefficient)**: Balanced measure of quality (-1 to +1)
         
+        For regression problems:
+        - **R² Score**: Coefficient of determination (0 to 1)
+        - **MSE**: Mean Squared Error
+
         ### 📦 How to Use the Exported `.pkl` Model in Python
         After downloading your trained model (`trained_pipeline.pkl`), you can use it like this:
 
@@ -339,23 +513,20 @@ with tab3:
             </div>
         """, unsafe_allow_html=True)
 
-
-
-
 # --- About Tab ---
-with tab4:
+with tab5:
     st.title("About")
     st.markdown("""
         Hello! I'm **Darshana V Zujam** 👋
         
-        I’m an MSc Bioinformatics student at DES Pune Univrsity, Pune, Maharashtra, India. I created TrainYourML to make machine learning more accessible and fun for everyone – especially beginners! 🎉 Whether you're just starting your ML journey or looking for a simple tool to play around with, this app has got you covered. 🤖
+        I'm an MSc Bioinformatics student at DES Pune Univrsity, Pune, Maharashtra, India. I created TrainYourML to make machine learning more accessible and fun for everyone – especially beginners! 🎉 Whether you're just starting your ML journey or looking for a simple tool to play around with, this app has got you covered. 🤖
 
         ## 🎯 Purpose Behind TrainYourML
 
         The goal behind TrainYourML is simple: I wanted to create a platform that allows anyone – no matter their experience level – to upload datasets, explore machine learning models, and start training them with just a few clicks! ✨ This app lets you focus on the fun part of ML while doing the heavy lifting behind the scenes.
 
         ## 💡 Why Should You Use TrainYourML?
-        Here’s why you’ll love it:
+        Here's why you'll love it:
 
         1. **Easy Upload** 📂: Upload your dataset in CSV or TSV format and start working right away.
 
@@ -367,10 +538,10 @@ with tab4:
 
         5. **Download Your Trained Model** 💾: Export your model as a .pkl file and use it for predictions later.
 
-        6. **No Need for Code** 🧑‍💻: Don’t worry about writing code – everything’s done for you in a simple, interactive interface!
+        6. **No Need for Code** 🧑‍💻: Don't worry about writing code – everything's done for you in a simple, interactive interface!
 
         ## 🛠️ Tools and Technologies Used
-        This app wouldn’t have been possible without these amazing tools and technologies:
+        This app wouldn't have been possible without these amazing tools and technologies:
 
         + **Streamlit**: For building the interactive web app 🌐
 
@@ -391,10 +562,10 @@ with tab4:
         + **Python**: The language that makes everything work 🐍
 
         ## 🙏 Acknowledgements
-        A huge thank you to my professor, **Dr. Kushagra Kashyap**, for being an amazing mentor. His guidance and support were invaluable! 🙌 I also want to express my gratitude to DES Pune University for providing me with the resources and environment to create this app. 🎓
+        A huge thank you to my professor, **Dr. Kushagra Kashyap**, for being an amazing mentor and **Dr. Poonam Deshpande** for her support. 🙌 I also want to express my gratitude to DES Pune University for providing me with the resources and environment to create this app. 🎓
 
         ## 📬 Get in Touch
-        Feel free to reach out or connect with me! I’m always open to feedback, collaboration, or just talking about ML! 😄
+        Feel free to reach out or connect with me! I'm always open to feedback, collaboration, or just talking about ML! 😄
 
         + **GitHub**: Visit my GitHub Repo
 
