@@ -573,7 +573,7 @@ with tab5:
 
         + **LinkedIn**: [Darshana Zujam](https://www.linkedin.com/in/darshana-zujam-66a5aa285)
 
-        + **Email**: [darshanazujam@gmail.com](darshanazujam@gmail.com)
+        + **Email**: darshanazujam@gmail.com
 
 
     
